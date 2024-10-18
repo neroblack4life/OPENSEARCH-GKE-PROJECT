@@ -1,0 +1,159 @@
+# config/pipelines.yml
+
+# - pipeline.id: cdp-pipeline
+#   path.config: "/etc/path/to/p1.config"
+#   pipeline.workers: 1
+#   queue.type: persisted
+#   queue.max_bytes: 10mb
+#   path.queue: path.data/queue
+# - pipeline.id: Rise-pipeline
+#   path.config: "/etc/different/path/p2.cfg"
+#   pipeline.workers: 1
+#   queue.type: persisted
+#   queue.max_bytes: 10mb
+# - pipeline.id: Risk-pipeline
+#   path.config: "/etc/different/path/p2.cfg"
+#   pipeline.workers: 1
+#   queue.type: persisted
+#   queue.max_bytes: 10mb
+
+
+# input {
+#   file {
+#     path => "/home/neroblack/opensearch/logstash-8.9.0/apache_logs_less_less.txt"
+#     start_position => "beginning"
+#     sincedb_path => "/dev/null"
+
+#   }
+# }
+
+# filter {
+#   grok {
+#     match => { "message" => "%{COMBINEDAPACHELOG}" }
+#   }
+#   date {
+#     match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+#     target => "@timestamp"
+#   }
+#   mutate {
+#     remove_field => [ "timestamp" ]
+#   }
+# }
+
+# output {
+#   stdout {
+#     codec => rubydebug
+#   }
+# }
+
+####======================PIPELINE TO PIPELINE CONFIGURATION==================================================
+# config/pipelines.yml
+- pipeline.id: upstream
+  config.string: input { stdin {} } output { pipeline { send_to => [myVirtualAddress] } }
+- pipeline.id: downstream
+  config.string: input { pipeline { address => myVirtualAddress } }
+
+#### The distributor pattern ====================================================================
+
+# config/pipelines.yml
+- pipeline.id: beats-server
+  config.string: |
+    input { beats { port => 5044 } }
+    output {
+        if [type] == apache {
+          pipeline { send_to => weblogs }
+        } else if [type] == system {
+          pipeline { send_to => syslog }
+        } else {
+          pipeline { send_to => fallback }
+        }
+    }
+- pipeline.id: weblog-processing
+  config.string: |
+    input { pipeline { address => weblogs } }
+    filter {
+       # Weblog filter statements here...
+    }
+    output {
+      elasticsearch { hosts => [es_cluster_a_host] }
+    }
+- pipeline.id: syslog-processing
+  config.string: |
+    input { pipeline { address => syslog } }
+    filter {
+       # Syslog filter statements here...
+    }
+    output {
+      elasticsearch { hosts => [es_cluster_b_host] }
+    }
+- pipeline.id: fallback-processing
+    config.string: |
+    input { pipeline { address => fallback } }
+    output { elasticsearch { hosts => [es_cluster_b_host] } }
+
+
+
+######======================= The output isolator pattern ===========================================
+
+# config/pipelines.yml
+- pipeline.id: intake
+  config.string: |
+    input { beats { port => 5044 } }
+    output { pipeline { send_to => [es, http] } }
+- pipeline.id: buffered-es
+  queue.type: persisted
+  config.string: |
+    input { pipeline { address => es } }
+    output { elasticsearch { } }
+- pipeline.id: buffered-http
+  queue.type: persisted
+  config.string: |
+    input { pipeline { address => http } }
+    output { http { } }
+
+
+#####======================= The forked path pattern =================================================
+
+# config/pipelines.yml
+- pipeline.id: intake
+  queue.type: persisted
+  config.string: |
+    input { beats { port => 5044 } }
+    output { pipeline { send_to => ["internal-es", "partner-s3"] } }
+- pipeline.id: buffered-es
+  queue.type: persisted
+  config.string: |
+    input { pipeline { address => "internal-es" } }
+    # Index the full event
+    output { elasticsearch { } }
+- pipeline.id: partner
+  queue.type: persisted
+  config.string: |
+    input { pipeline { address => "partner-s3" } }
+    filter {
+      # Remove the sensitive data
+      mutate { remove_field => 'sensitive-data' }
+    }
+    output { s3 { } } # Output to partner's bucket
+
+
+#           =============The collector pattern============================================
+
+# config/pipelines.yml
+- pipeline.id: beats
+  config.string: |
+    input { beats { port => 5044 } }
+    output { pipeline { send_to => [commonOut] } }
+- pipeline.id: kafka
+  config.string: |
+    input { kafka { ... } }
+    output { pipeline { send_to => [commonOut] } }
+- pipeline.id: partner
+  # This common pipeline enforces the same logic whether data comes from Kafka or Beats
+  config.string: |
+    input { pipeline { address => commonOut } }
+    filter {
+      # Always remove sensitive data from all input sources
+      mutate { remove_field => 'sensitive-data' }
+    }
+    output { elasticsearch { } }
