@@ -26,7 +26,11 @@ This is an End-to-End Opensearch Log analysis project on GCP using various GCP s
 ###  📋 Step 10: Opensearch Data Stream
 
 
+<<<<<<< HEAD
 ======================================================================================================================================
+=======
+=========================================================
+>>>>>>> origin/main
 
 
     
@@ -79,7 +83,11 @@ Open Cloud Shell in the GCP console or localhost shell terminal and run the comm
     
 
 
+<<<<<<< HEAD
 ==========================================================================================================================================
+=======
+=========================================================
+>>>>>>> origin/main
 
 ###  📋 Step 2: Create Logging Sinks in GCP
 
@@ -95,7 +103,11 @@ To create the logging sinks for cdp, risk & rise application servers to the the 
 
 
 
+<<<<<<< HEAD
 =========================================================================================================================================
+=======
+=========================================================
+>>>>>>> origin/main
 
 ###  📋 Step 3: Create Google Pub/Sub Topics
 
@@ -108,7 +120,11 @@ Create the Pub/Sub topics for each logging sink:
     
     
 
+<<<<<<< HEAD
 =======================================================================================================================================
+=======
+=========================================================
+>>>>>>> origin/main
 
 ###  📋 Step 4: Create Subscriptions
 
@@ -120,7 +136,11 @@ Create subscriptions for each topic:
     
     
     
+<<<<<<< HEAD
 ======================================================================================================================================
+=======
+=========================================================
+>>>>>>> origin/main
 
 
 ###  📋 Step 5: Set Up Logstash Configuration
@@ -130,7 +150,11 @@ Create a Logstash configuration file named logstash.conf. This file will define 
 Logstash.conf file is located in the /logstast-conf folder in the github repository
 
 
+<<<<<<< HEAD
 =======================================================================================================================================
+=======
+========================================================
+>>>>>>> origin/main
 
 ###  📋 Step 6: Create Dockerfile for Logstash
 
@@ -163,7 +187,11 @@ The Dockerfile is in the opensearch-gke-project folder
 
 
 
+<<<<<<< HEAD
 =============================================================================================================================================
+=======
+====================================================
+>>>>>>> origin/main
 
 
 ###  📋 Step 7: Build and Deploy Logstash to Cloud Run
@@ -206,7 +234,11 @@ Replace YOUR_CLOUD_RUN_SERVICE_ACCOUNT with the service account used by your Clo
     
     
     
+<<<<<<< HEAD
 ================================================================================================================================================    
+=======
+====================================================    
+>>>>>>> origin/main
 
 ###  📋 Step 8: Set Up OpenSearch on GKE using Helm
 
@@ -247,7 +279,11 @@ Install OpenSearch-dashboard using Helm:
      
 Expose the Opensearch Cluster internal loadbalancer for the Logstash cloud run service to access
      
+<<<<<<< HEAD
 ==========================================================================================================================================
+=======
+======================================================
+>>>>>>> origin/main
 
 ###  📋 Step 9: Verify the Setup
 
@@ -437,3 +473,7 @@ NB: Repeat step 10.1.1 for risk_access_logs_template & rise_access_logs_template
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
